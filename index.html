@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LoopChat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 600px;
+      height: 90vh;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: #4a90e2;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .chat-box {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      background: #eef2f7;
+    }
+
+    .message {
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .user1 {
+      align-self: flex-start;
+      background: #d2e3fc;
+      color: #1a237e;
+    }
+
+    .user2 {
+      align-self: flex-end;
+      background: #bbdefb;
+      color: #0d47a1;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 1rem;
+      gap: 0.5rem;
+      border-top: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #357ab8;
+    }
+
+    select {
+      padding: 0.4rem;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <header>
+      <h1>💬 LoopChat</h1>
+      <p>Talk between User 1 & User 2</p>
+    </header>
+
+    <div id="chat" class="chat-box">Loading chat...</div>
+
+    <div class="input-area">
+      <select id="sender">
+        <option value="User 1">User 1</option>
+        <option value="User 2">User 2</option>
+      </select>
+      <input type="text" id="messageInput" placeholder="Type your message..." />
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://loopchat.onrender.com/messages"; // cámbialo por tu URL real
+
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+
+    function fetchMessages() {
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+          const chatBox = document.getElementById("chat");
+          chatBox.innerHTML = "";
+          data.forEach(msg => {
+            const div = document.createElement("div");
+            div.className = "message " + (msg.sender === "User 1" ? "user1" : "user2");
+            div.textContent = msg.sender + ": " + msg.text;
+            chatBox.appendChild(div);
+          });
+          chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(() => {
+          document.getElementById("chat").innerText = "⚠️ Cannot connect to server.";
+        });
+    }
+
+    function sendMessage() {
+      const sender = document.getElementById("sender").value;
+      const text = document.getElementById("messageInput").value.trim();
+      if (!text) return;
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sender, text })
+      }).then(() => {
+        document.getElementById("messageInput").value = "";
+        fetchMessages();
+      });
+    }
+
+    setInterval(fetchMessages, 1000);
+    fetchMessages();
+  </script>
+</body>
+</html>
